@@ -14,8 +14,8 @@ def send_notification(client: pushsafer.Client, title: str, message: str) -> Non
     :param message: Message contained in the notification.
     """
     client.send_message(message, title,
-                                      None, None, None, None, None, None, None,
-                                      None, None, None, None, None, None, None)
+                        None, None, None, None, None, None, None,
+                        None, None, None, None, None, None, None)
 
 
 def notify_new_assignments(wanikani_token: str, pushsafer_token: str, after: datetime = None) -> None:

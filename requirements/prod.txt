@@ -3,3 +3,5 @@ pip~=21.1.3
 setuptools~=57.4.0
 
 urllib3~=1.26.6
+wanikani-api==0.5.1
+python-pushsafer==0.4

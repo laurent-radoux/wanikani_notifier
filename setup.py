@@ -29,9 +29,12 @@ parsed_test_requirements = parse_requirements(
     session='workaround'
 )
 
-
-requirements = [str(ir.req) for ir in parsed_requirements]
-test_requirements = [str(tr.req) for tr in parsed_test_requirements]
+try:
+    requirements = [str(ir.req) for ir in parsed_requirements]
+    test_requirements = [str(tr.req) for tr in parsed_test_requirements]
+except AttributeError:
+    requirements = [str(ir.requirement) for ir in parsed_requirements]
+    test_requirements = [str(tr.requirement) for tr in parsed_test_requirements]
 
 setup(
     author="Laurent Radoux",
@@ -50,7 +53,7 @@ setup(
     description="Notifies a WaniKani user for new reviews to do.",
     entry_points={
         'console_scripts': [
-            'wanikani_notifier=wanikani_notifier.cli:main',
+            'wanikani_notifier=wanikani_notifier.__main__:main',
         ],
     },
     install_requires=requirements,
