@@ -3,7 +3,7 @@ from unittest.mock import MagicMock
 import pytest
 from pytest_mock import MockerFixture
 
-from wanikani_notifier.wanikani_notifier import notify_new_assignments
+from wanikani_notifier.wanikani_notifier import notify_available_assignments
 
 
 class MockedLesson:
@@ -36,7 +36,7 @@ def mocked_pushsafer_send_message(mocker: MockerFixture) -> MagicMock:
 def test_notify_no_new_assignment(mocked_wk_client, mocked_pushsafer_init, mocked_pushsafer_send_message):
     mocked_wk_client.return_value.assignments.return_value = []
 
-    notify_new_assignments("wk_token", "ps_token", None)
+    notify_available_assignments("wk_token", "ps_token", -1)
 
     mocked_wk_client.assert_called_once()
     mocked_wk_client.return_value.assignments.assert_called_once()
@@ -47,7 +47,7 @@ def test_notify_no_new_assignment(mocked_wk_client, mocked_pushsafer_init, mocke
 def test_notify_new_reviews_no_new_lessons(mocked_wk_client, mocked_pushsafer_init, mocked_pushsafer_send_message):
     mocked_wk_client.return_value.assignments.return_value = [MockedReview()]
 
-    notify_new_assignments("wk_token", "ps_token", None)
+    notify_available_assignments("wk_token", "ps_token", -1)
 
     mocked_wk_client.assert_called_once()
     mocked_wk_client.return_value.assignments.assert_called_once()
@@ -60,7 +60,7 @@ def test_notify_new_reviews_no_new_lessons(mocked_wk_client, mocked_pushsafer_in
 def test_notify_no_new_reviews_new_lessons(mocked_wk_client, mocked_pushsafer_init, mocked_pushsafer_send_message):
     mocked_wk_client.return_value.assignments.return_value = [MockedLesson()]
 
-    notify_new_assignments("wk_token", "ps_token", None)
+    notify_available_assignments("wk_token", "ps_token", -1)
 
     mocked_wk_client.assert_called_once()
     mocked_wk_client.return_value.assignments.assert_called_once()
@@ -73,7 +73,7 @@ def test_notify_no_new_reviews_new_lessons(mocked_wk_client, mocked_pushsafer_in
 def test_notify_new_reviews_new_lessons(mocked_wk_client, mocked_pushsafer_init, mocked_pushsafer_send_message):
     mocked_wk_client.return_value.assignments.return_value = [MockedReview(), MockedLesson()]
 
-    notify_new_assignments("wk_token", "ps_token", None)
+    notify_available_assignments("wk_token", "ps_token", -1)
 
     mocked_wk_client.assert_called_once()
     mocked_wk_client.return_value.assignments.assert_called_once()

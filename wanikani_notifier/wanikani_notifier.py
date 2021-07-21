@@ -18,21 +18,29 @@ def send_notification(client: pushsafer.Client, title: str, message: str) -> Non
                         None, None, None, None, None, None, None)
 
 
-def notify_new_assignments(wanikani_token: str, pushsafer_token: str, after: datetime = None) -> None:
+def notify_available_assignments(wanikani_token: str, pushsafer_token: str, hours_ago: int) -> None:
     """
     Fetches the list of new assignments from WaniKani and notifies when at least one review or
     one lesson is available.
 
     :param wanikani_token: Private API token to connect to WaniKani API
     :param pushsafer_token: Private key to connect to PushSafer API
-    :param after: Specifies the type after which the new assignemnts should be considered, defaults to None.
+    :param hours_ago: Specifies how far back in time available assignment should be retrieved,
+                        in hours (-1 indicates infinity).
     """
     urllib3.disable_warnings(category=InsecureRequestWarning)
     wk_api = wk_client.Client(wanikani_token)
     pushsafer.init(pushsafer_token)
 
     review_time = datetime.datetime.utcnow().replace(minute=0, second=0, microsecond=0)
-    assignments = wk_api.assignments(fetch_all=True, available_before=review_time, available_after=after)
+    assignments = wk_api.assignments(fetch_all=True,
+                                     available_before=review_time,
+                                     available_after=(
+                                         review_time - datetime.timedelta(hours=hours_ago)
+                                         if hours_ago >= 0
+                                         else None
+                                     )
+                                     )
 
     review_count = sum(1 for a in assignments if a.started_at)
     lesson_count = sum(1 for a in assignments if a.unlocked_at and not a.started_at)
