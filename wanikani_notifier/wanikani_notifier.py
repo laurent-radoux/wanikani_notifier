@@ -36,7 +36,7 @@ def notify_available_assignments(wanikani_token: str, pushsafer_token: str, hour
     assignments = wk_api.assignments(fetch_all=True,
                                      available_before=review_time,
                                      available_after=(
-                                         review_time - datetime.timedelta(hours=hours_ago)
+                                         review_time - datetime.timedelta(hours=hours_ago-1, minutes=59, seconds=59)
                                          if hours_ago >= 0
                                          else None
                                      )
