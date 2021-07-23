@@ -14,7 +14,7 @@ def send_notification(client: pushsafer.Client, title: str, message: str) -> Non
     :param message: Message contained in the notification.
     """
     client.send_message(message, title,
-                        None, None, None, None, None, None, None,
+                        None, None, None, None, "https://www.wanikani.com/", None, None,
                         None, None, None, None, None, None, None)
 
 
