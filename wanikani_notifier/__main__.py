@@ -1,24 +1,32 @@
 """Console script for wanikani_notifier."""
 
 import sys
+from typing import Optional
+
 import click
 
+from wanikani_api.client import Client as WaniKaniClient
+
 from wanikani_notifier import wanikani_notifier
+from wanikani_notifier.notifiers.pushsafer import PushSaferNotifier
 
 
 @click.command()
-@click.option("-w", "--wanikani-token", required=True, help="WaniKani API token")
-@click.option("-p", "--pushsafer-token", required=True, help="PushSafer private key")
+@click.option("--wanikani", required=True, help="WaniKani API token")
 @click.option(
-    "-h",
-    "--hours-ago",
+    "--since",
     required=False,
     default=-1,
-    help="Period in hours [now-h; now] for which available assignments are queried, defaults to -1 (infinity)",
+    help="How many hours since assignments are accounted for, defaults to -1 (forever)",
     show_default=True
 )
-def main(wanikani_token: str, pushsafer_token: str, hours_ago: int) -> int:
-    wanikani_notifier.notify_available_assignments(wanikani_token, pushsafer_token, hours_ago)
+@click.option("--pushsafer", required=False, help="PushSafer private key")
+def main(wanikani: str, since: int, pushsafer: Optional[str]) -> int:
+    notifiers = []
+    if pushsafer:
+        notifiers.append(PushSaferNotifier(pushsafer))
+
+    wanikani_notifier.notify_available_assignments(WaniKaniClient(wanikani), since, notifiers)
 
     return 0
 
