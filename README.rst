@@ -16,7 +16,7 @@ WaniKani Notifier
 
 
 
-Notifies a WaniKani user for new reviews to do.
+Notifies a WaniKani user for new assignments to do.
 
 
 * Free software: MIT license
@@ -27,8 +27,13 @@ Features
 --------
 
 * Fetches new assignments available as of the start of the hour at which the call is performed
-* Sends a notification via PushSafer whenever new reviews and/or lessons are available
-* Optionally specifies the time before which assignments are ignored
+* Sends a notification via different notification systems whenever new reviews and/or lessons are available
+
+  * List of supported notifiers:
+
+    * PushSafer
+
+* Optionally specifies the number of hours since new assignments are considered
 
   * Helps preventing many notifications once at least one assignment is available
 
