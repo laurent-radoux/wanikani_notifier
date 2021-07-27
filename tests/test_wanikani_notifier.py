@@ -36,7 +36,7 @@ def test_notify_no_new_assignment(mocked_wk_client, mocked_notifier):
 
     notify_available_assignments(mocked_wk_client, -1, [mocked_notifier])
 
-    mocked_wk_client.assignments.assert_called_once()
+    mocked_wk_client.assignments.assert_called()
     mocked_notifier.notify.assert_not_called()
 
 
@@ -46,7 +46,7 @@ def test_notify_new_assignments_multiple_notifiers(mocked_wk_client, mocked_noti
     notifiers = [mocked_notifier, mocked_notifier, mocked_notifier]
     notify_available_assignments(mocked_wk_client, -1, notifiers)
 
-    mocked_wk_client.assignments.assert_called_once()
+    mocked_wk_client.assignments.assert_called()
     mocked_notifier.notify.assert_called()
     assert mocked_notifier.notify.call_count == len(notifiers)
 
@@ -56,7 +56,7 @@ def test_notify_new_assignments_no_notifiers(mocked_wk_client, mocked_notifier):
 
     notify_available_assignments(mocked_wk_client, -1, [])
 
-    mocked_wk_client.assignments.assert_called_once()
+    mocked_wk_client.assignments.assert_called()
     mocked_notifier.notify.assert_not_called()
 
 
