@@ -8,6 +8,7 @@ import click
 from wanikani_api.client import Client as WaniKaniClient
 
 from wanikani_notifier import wanikani_notifier
+from wanikani_notifier.notifiers.console import ConsoleNotifier
 from wanikani_notifier.notifiers.pushsafer import PushSaferNotifier
 
 
@@ -17,14 +18,24 @@ from wanikani_notifier.notifiers.pushsafer import PushSaferNotifier
     "--since",
     required=False,
     default=-1,
-    help="How many hours since assignments are accounted for, defaults to -1 (forever)",
+    help="How many hours since assignments are accounted for (-1 meaning forever)",
     show_default=True
 )
-@click.option("--pushsafer", required=False, help="PushSafer private key")
-def main(wanikani: str, since: int, pushsafer: Optional[str]) -> int:
+@click.option("--pushsafer",
+              required=False,
+              help="Activates notifications though PushSafer by providing the private key"
+              )
+@click.option("--console/--no-console", required=False, help="Activates notifications though the console")
+def main(wanikani: str,
+         since: int,
+         pushsafer: Optional[str],
+         console: Optional[str]
+         ) -> int:
     notifiers = []
     if pushsafer:
         notifiers.append(PushSaferNotifier(pushsafer))
+    if console:
+        notifiers.append(ConsoleNotifier())
 
     wanikani_notifier.notify_available_assignments(WaniKaniClient(wanikani), since, notifiers)
 

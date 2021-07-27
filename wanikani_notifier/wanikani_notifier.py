@@ -66,6 +66,7 @@ def notify_available_assignments(wanikani_client: WaniKaniClient, since_x_hours:
     """
 
     current_time_rounded = datetime.utcnow().replace(minute=0, second=0, microsecond=0)
+    current_time_rounded += timedelta(hours=7)
     assignments_available_now = get_available_assignments(wanikani_client,
                                                           start=(
                                                               current_time_rounded - (

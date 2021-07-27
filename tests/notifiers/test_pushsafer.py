@@ -20,11 +20,6 @@ def mocked_pushsafer_send_message(mocker: MockerFixture) -> MagicMock:
     return mocker.patch("pushsafer.Client.send_message")
 
 
-@pytest.fixture
-def pushsafer_notifier(mocked_pushsafer_init, mocked_pushsafer_send_message) -> Notifier:
-    return PushSaferNotifier("__TOKEN__")
-
-
 class TestPushSaferNotifier(NotifierTester):
     @pytest.fixture
     def imp(self, mocked_pushsafer_init, mocked_pushsafer_send_message) -> Notifier:
