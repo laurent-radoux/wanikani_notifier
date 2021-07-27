@@ -8,6 +8,7 @@ import click
 from wanikani_api.client import Client as WaniKaniClient
 
 from wanikani_notifier import wanikani_notifier
+from wanikani_notifier.notifiers import notifier
 from wanikani_notifier.notifiers.console import ConsoleNotifier
 from wanikani_notifier.notifiers.pushsafer import PushSaferNotifier
 
@@ -33,9 +34,9 @@ def main(wanikani: str,
          ) -> int:
     notifiers = []
     if pushsafer:
-        notifiers.append(PushSaferNotifier(pushsafer))
+        notifiers.append(notifier.factory.create(PushSaferNotifier.key(), private_key=pushsafer))
     if console:
-        notifiers.append(ConsoleNotifier())
+        notifiers.append(notifier.factory.create(ConsoleNotifier.key()))
 
     wanikani_notifier.notify_available_assignments(WaniKaniClient(wanikani), since, notifiers)
 

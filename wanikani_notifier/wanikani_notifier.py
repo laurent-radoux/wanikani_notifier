@@ -4,7 +4,7 @@ from typing import List, Optional
 
 from wanikani_api.client import Client as WaniKaniClient
 
-from wanikani_notifier.notifiers.notifier import Notifier, NoMessageProvided
+from wanikani_notifier.notifiers.notifier import Notifier
 
 AvailableAssignments = namedtuple("AvailableAssignments", ("reviews", "lessons"))
 

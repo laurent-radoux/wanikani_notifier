@@ -1,3 +1,4 @@
+from typing import Dict, Any
 from unittest.mock import MagicMock
 
 import pytest
@@ -21,6 +22,14 @@ def mocked_pushsafer_send_message(mocker: MockerFixture) -> MagicMock:
 
 
 class TestPushSaferNotifier(NotifierTester):
+    @property
+    def key(self) -> str:
+        return "pushsafer"
+
+    @classmethod
+    def build_parameters(cls) -> Dict[str, Any]:
+        return {"private_key": "__TOKEN__"}
+
     @pytest.fixture
     def imp(self, mocked_pushsafer_init, mocked_pushsafer_send_message) -> Notifier:
         yield PushSaferNotifier("__TOKEN__")

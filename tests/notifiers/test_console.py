@@ -1,3 +1,4 @@
+from typing import Any, Dict
 from unittest.mock import MagicMock
 
 import pytest
@@ -13,7 +14,15 @@ def mocked_console_print(mocker: MockerFixture) -> MagicMock:
     return mocker.patch("builtins.print")
 
 
-class TestPushSaferNotifier(NotifierTester):
+class TestConsoleNotifier(NotifierTester):
+    @property
+    def key(self) -> str:
+        return "console"
+
+    @classmethod
+    def build_parameters(cls) -> Dict[str, Any]:
+        return {}
+
     @pytest.fixture
     def imp(self, mocked_console_print) -> Notifier:
         yield ConsoleNotifier()
