@@ -1,6 +1,6 @@
-from datetime import datetime, timedelta
+from datetime import datetime
 from collections import namedtuple
-from typing import List, Optional
+from typing import Optional
 
 from wanikani_api.client import Client as WaniKaniClient
 

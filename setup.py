@@ -53,7 +53,7 @@ setup(
     description="Notifies a WaniKani user for new reviews to do.",
     entry_points={
         'console_scripts': [
-            'wanikani_notifier=wanikani_notifier.__main__:cli',
+            'wanikani_notifier=wanikani_notifier.cli:cli',
         ],
     },
     install_requires=requirements,
