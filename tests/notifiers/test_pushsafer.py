@@ -26,12 +26,12 @@ class TestPushSaferNotifier(NotifierTester):
     def key(self) -> str:
         return "pushsafer"
 
-    @classmethod
-    def build_parameters(cls) -> Dict[str, Any]:
+    @pytest.fixture
+    def build_parameters(self) -> Dict[str, Any]:
         return {"private_key": "__TOKEN__"}
 
     @pytest.fixture
-    def imp(self, mocked_pushsafer_init, mocked_pushsafer_send_message) -> Notifier:
+    def imp(self, mocked_pushsafer_init) -> Notifier:
         yield PushSaferNotifier("__TOKEN__")
 
     def test_notify_message(self, imp, mocked_pushsafer_send_message):

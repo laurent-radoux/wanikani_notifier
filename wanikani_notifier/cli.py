@@ -1,6 +1,6 @@
 from datetime import datetime, timedelta
 from functools import update_wrapper
-from typing import Optional, Generator, Any, Callable
+from typing import Optional, Generator, Any, Callable, Tuple
 
 import click
 from more_itertools import peekable
@@ -9,6 +9,7 @@ from wanikani_api.client import Client as WaniKaniClient
 
 from wanikani_notifier.notifiers import notifier
 from wanikani_notifier.notifiers.console import ConsoleNotifier
+from wanikani_notifier.notifiers.pushover import PushoverNotifier
 from wanikani_notifier.notifiers.pushsafer import PushSaferNotifier
 from wanikani_notifier.wanikani import get_notification_message, get_available_assignments
 
@@ -88,16 +89,24 @@ def all_available_assignments(wanikani_client: WaniKaniClient):
               required=False,
               help="Activates notifications though PushSafer by providing the private key"
               )
+@click.option("--pushover",
+              type=(str, str),
+              required=False,
+              help="Activates notifications though Pushover by providing the app key and the user key"
+              )
 @click.option("--console/--no-console", required=False, help="Activates notifications though the console")
 @processor
 def notify(wanikani_client: WaniKaniClient,
            message_stream: Generator[str, Any, None],
            pushsafer: Optional[str],
+           pushover: Optional[Tuple[str, str]],
            console: Optional[bool]
            ) -> int:
     notifiers = []
     if pushsafer:
         notifiers.append(notifier.factory.create(PushSaferNotifier.key(), private_key=pushsafer))
+    if pushover:
+        notifiers.append(notifier.factory.create(PushoverNotifier.key(), app_token=pushover[0], user_token=pushover[1]))
     if console:
         notifiers.append(notifier.factory.create(ConsoleNotifier.key()))
 

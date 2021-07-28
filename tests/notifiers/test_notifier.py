@@ -17,13 +17,13 @@ class NotifierTester(ABC):
     def key(cls) -> str:
         pass
 
-    @classmethod
     @abstractmethod
-    def build_parameters(cls) -> Dict[str, Any]:
+    @pytest.fixture
+    def build_parameters(self) -> Dict[str, Any]:
         pass
 
-    def test_builder(self):
-        assert factory.create(self.key, **self.build_parameters()) is not None
+    def test_builder(self, build_parameters):
+        assert factory.create(self.key, **build_parameters) is not None
 
     def test_notify_none_message(self, imp):
         with pytest.raises(NoMessageProvided):

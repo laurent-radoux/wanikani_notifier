@@ -19,8 +19,8 @@ class TestConsoleNotifier(NotifierTester):
     def key(self) -> str:
         return "console"
 
-    @classmethod
-    def build_parameters(cls) -> Dict[str, Any]:
+    @pytest.fixture
+    def build_parameters(self) -> Dict[str, Any]:
         return {}
 
     @pytest.fixture
