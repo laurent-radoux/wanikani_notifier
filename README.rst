@@ -6,9 +6,6 @@ WaniKani Notifier
 .. image:: https://img.shields.io/pypi/v/wanikani_notifier.svg
         :target: https://pypi.python.org/pypi/wanikani_notifier
 
-.. image:: https://img.shields.io/travis/laurent-radoux/wanikani_notifier.svg
-        :target: https://travis-ci.com/laurent-radoux/wanikani_notifier
-
 .. image:: https://readthedocs.org/projects/wanikani-notifier/badge/?version=latest
         :target: https://wanikani-notifier.readthedocs.io/en/latest/?version=latest
         :alt: Documentation Status
@@ -26,16 +23,19 @@ Notifies a WaniKani user for new assignments to do.
 Features
 --------
 
-* Fetches new assignments available as of the start of the hour at which the call is performed
+* Can fetch
+
+  * Assignments that became available in the last x hours
+  * All available assignments as of the start of the hour
+
 * Sends a notification via different notification systems whenever new reviews and/or lessons are available
 
   * List of supported notifiers:
 
+    * Console
+    * Pushover
     * PushSafer
 
-* Optionally specifies the number of hours since new assignments are considered
-
-  * Helps preventing many notifications once at least one assignment is available
 
 Credits
 -------

@@ -2,6 +2,14 @@
 History
 =======
 
+0.4.0 (2021-07-28)
+------------------
+
+* Added possibility to chain generation of messages to notify multiple things at once (CLI)
+* Added support for console and Pushover notifiers
+* Added Notifier factory system
+* Added total available assignments to the notifiable topics
+
 0.3.0 (2021-07-23)
 ------------------
 
