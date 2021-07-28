@@ -85,16 +85,17 @@ def all_available_assignments(wanikani_client: WaniKaniClient):
 
 
 @cli.command("notify")
+@click.option("--console/--no-console", required=False, help="Activates notifications though the console")
 @click.option("--pushsafer",
               required=False,
               help="Activates notifications though PushSafer by providing the private key"
               )
 @click.option("--pushover",
-              type=(str, str),
+              nargs=2,
+              type=str,
               required=False,
               help="Activates notifications though Pushover by providing the app key and the user key"
               )
-@click.option("--console/--no-console", required=False, help="Activates notifications though the console")
 @processor
 def notify(wanikani_client: WaniKaniClient,
            message_stream: Generator[str, Any, None],

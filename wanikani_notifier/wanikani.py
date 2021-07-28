@@ -2,6 +2,7 @@ from datetime import datetime
 from collections import namedtuple
 from typing import Optional
 
+import pytz
 from wanikani_api.client import Client as WaniKaniClient
 
 AvailableAssignments = namedtuple("AvailableAssignments", ("reviews", "lessons"))
@@ -20,10 +21,13 @@ def get_available_assignments(wanikani_client: WaniKaniClient,
     :param end: End of the time period when assignments are considered (inclusive).
     :return: the available assignments.
     """
-    assignments = wanikani_client.assignments(fetch_all=True, available_after=start, available_before=end)
-
-    review_count = sum(1 for a in assignments if a.started_at)
-    lesson_count = sum(1 for a in assignments if a.unlocked_at and not a.started_at)
+    review_count = len(wanikani_client.assignments(fetch_all=True, unlocked=True, started=True,
+                                                   available_after=start, available_before=end))
+    lesson_count = sum(1 for a
+                       in wanikani_client.assignments(fetch_all=True, unlocked=True, started=False)
+                       if a.created_at.replace(tzinfo=pytz.utc) <= end.replace(tzinfo=pytz.utc)
+                       and (start.replace(tzinfo=pytz.utc) <= a.created_at.replace(tzinfo=pytz.utc) if start else True)
+                       )
 
     return AvailableAssignments(reviews=review_count, lessons=lesson_count)
 
