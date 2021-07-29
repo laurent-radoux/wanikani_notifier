@@ -30,3 +30,7 @@ class TestConsoleNotifier(NotifierTester):
     def test_notify_simple_message(self, imp, mocked_console_print):
         super().test_notify_simple_message(imp)
         mocked_console_print.assert_called()
+        
+    def test_notify_message_all_options(self, imp, mocked_console_print):
+        super().test_notify_message_all_options(imp)
+        mocked_console_print.assert_called()

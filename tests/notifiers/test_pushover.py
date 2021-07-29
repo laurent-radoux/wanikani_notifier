@@ -40,5 +40,5 @@ class TestPushoverNotifier(NotifierTester):
         mocked_pushover_send_message.assert_called()
 
     def test_notify_message_all_options(self, imp, mocked_pushover_send_message):
-        super().test_notify_simple_message(imp)
+        super().test_notify_message_all_options(imp)
         mocked_pushover_send_message.assert_called()
