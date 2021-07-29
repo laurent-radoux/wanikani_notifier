@@ -115,6 +115,6 @@ def notify(wanikani_client: WaniKaniClient,
     final_message = "\n".join(m for m in messages if m)
     if final_message:
         for n in notifiers:
-            n.notify("WaniKani", final_message)
+            n.notify(title="WaniKani", message=final_message, url="https://www.wanikani.com/dashboard")
 
     yield from messages

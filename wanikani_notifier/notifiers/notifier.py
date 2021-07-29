@@ -1,5 +1,5 @@
 from abc import ABC, abstractmethod
-from typing import Callable
+from typing import Callable, Optional
 
 
 class NoMessageProvided(RuntimeError):
@@ -16,12 +16,14 @@ class Notifier(ABC):
         """
 
     @abstractmethod
-    def notify(self, title: str, message: str):
+    def notify(self, title: str, message: str, url: Optional[str] = None, icon: Optional[str] = None):
         """
         Sends a notification.
 
         :param title: Title of the notification to send.
         :param message: Content of the notification to send.
+        :param url: Optional url to display.
+        :param icon: Optional icon to display
         """
 
 

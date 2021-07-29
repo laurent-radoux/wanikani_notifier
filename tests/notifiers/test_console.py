@@ -27,6 +27,10 @@ class TestConsoleNotifier(NotifierTester):
     def imp(self, mocked_console_print) -> Notifier:
         yield ConsoleNotifier()
 
-    def test_notify_message(self, imp, mocked_console_print):
-        super().test_notify_message(imp)
+    def test_notify_simple_message(self, imp, mocked_console_print):
+        super().test_notify_simple_message(imp)
+        mocked_console_print.assert_called()
+
+    def test_notify_message_all_options(self, imp, mocked_console_print):
+        super().test_notify_message_all_options(imp)
         mocked_console_print.assert_called()
