@@ -21,7 +21,6 @@ def mocked_consumer(mocked_processor_counter):
     @processor
     def message_consumer(_, message_stream):
         mocked_processor_counter()
-        yield from message_stream
 
     return message_consumer()
 
