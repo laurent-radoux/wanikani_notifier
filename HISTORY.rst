@@ -6,6 +6,9 @@ Unreleased
 ----------
 
 * Improved notifications by allowing the sending of URLs and icons
+* Time for available now is no longer set to beginning of hour
+
+  * Caused weird timings for lessons
 
 0.4.2 (2021-07-28)
 ------------------

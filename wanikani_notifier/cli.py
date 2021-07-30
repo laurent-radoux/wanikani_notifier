@@ -67,7 +67,7 @@ def process_all(processors, wanikani: str, stop_if_empty: bool):
 )
 @generator
 def available_assignments_now(wanikani_client: WaniKaniClient, since: int):
-    current_time_rounded = datetime.utcnow().replace(minute=0, second=0, microsecond=0)
+    current_time_rounded = datetime.utcnow()
     start_time = (current_time_rounded - (timedelta(hours=since) - timedelta(seconds=1)) if since >= 0 else None)
     assignments_available_now = get_available_assignments(wanikani_client,
                                                           start=start_time,
@@ -79,7 +79,7 @@ def available_assignments_now(wanikani_client: WaniKaniClient, since: int):
 @cli.command("all_available_assignments")
 @generator
 def all_available_assignments(wanikani_client: WaniKaniClient):
-    current_time_rounded = datetime.utcnow().replace(minute=0, second=0, microsecond=0)
+    current_time_rounded = datetime.utcnow()
     assignments_available_now = get_available_assignments(wanikani_client, end=current_time_rounded)
     yield get_notification_message(assignments_available_now, message_template="In total, there are {} to do.")
 
