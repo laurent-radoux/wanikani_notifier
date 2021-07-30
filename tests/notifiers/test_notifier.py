@@ -33,5 +33,8 @@ class NotifierTester(ABC):
         with pytest.raises(NoMessageProvided):
             imp.notify("title", "")
 
-    def test_notify_message(self, imp):
+    def test_notify_simple_message(self, imp):
         imp.notify("title", "message")
+
+    def test_notify_message_all_options(self, imp):
+        imp.notify("title", "message", "url", "icon")

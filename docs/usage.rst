@@ -1,6 +1,5 @@
-=====
 Usage
-=====
+-----
 
 To use WaniKani Notifier in a project::
 

@@ -1,3 +1,5 @@
+from typing import Optional
+
 import pushsafer
 import urllib3
 from urllib3.exceptions import InsecureRequestWarning
@@ -20,12 +22,12 @@ class PushSaferNotifier(Notifier):
     def build(cls, private_key: str, **_ignored) -> "PushSaferNotifier":
         return PushSaferNotifier(private_key)
 
-    def notify(self, title: str, message: str):
+    def notify(self, title: str, message: str, url: Optional[str] = None, icon: Optional[str] = None):
         if not message:
             raise NoMessageProvided
 
         self._client.send_message(message, title,
-                                  None, None, None, None, None, None, None,
+                                  None, None, None, None, url, None, None,
                                   None, None, None, None, None, None, None)
 
 

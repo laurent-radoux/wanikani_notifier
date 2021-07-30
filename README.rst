@@ -36,6 +36,10 @@ Features
     * Pushover
     * PushSafer
 
+  * Can send a title and message and optionally a URL and/or and icon
+
+.. include:: docs/usage.rst
+
 
 Credits
 -------

@@ -34,6 +34,10 @@ class TestPushSaferNotifier(NotifierTester):
     def imp(self, mocked_pushsafer_init) -> Notifier:
         yield PushSaferNotifier("__TOKEN__")
 
-    def test_notify_message(self, imp, mocked_pushsafer_send_message):
-        super().test_notify_message(imp)
+    def test_notify_simple_message(self, imp, mocked_pushsafer_send_message):
+        super().test_notify_simple_message(imp)
+        mocked_pushsafer_send_message.assert_called()
+
+    def test_notify_message_all_options(self, imp, mocked_pushsafer_send_message):
+        super().test_notify_message_all_options(imp)
         mocked_pushsafer_send_message.assert_called()
