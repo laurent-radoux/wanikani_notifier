@@ -40,7 +40,7 @@ def generator(f: Callable):
               help="Determines whether chaining occurs when one command does not trigger a new message to notify"
               )
 def cli(wanikani: str, stop_if_empty: bool):
-    pass
+    pass  # pragma: nocover
 
 
 @cli.resultcallback()
@@ -97,12 +97,12 @@ def all_available_assignments(wanikani_client: WaniKaniClient):
               help="Activates notifications though Pushover by providing the app key and the user key"
               )
 @processor
-def notify(wanikani_client: WaniKaniClient,
+def notify(_,
            message_stream: Generator[str, Any, None],
            pushsafer: Optional[str],
            pushover: Optional[Tuple[str, str]],
            console: Optional[bool]
-           ) -> int:
+           ) -> None:
     notifiers = []
     if pushsafer:
         notifiers.append(notifier.factory.create(PushSaferNotifier.key(), private_key=pushsafer))
@@ -111,10 +111,7 @@ def notify(wanikani_client: WaniKaniClient,
     if console:
         notifiers.append(notifier.factory.create(ConsoleNotifier.key()))
 
-    messages = list(message_stream)
-    final_message = "\n".join(m for m in messages if m)
+    final_message = "\n".join(m for m in message_stream if m)
     if final_message:
         for n in notifiers:
             n.notify("WaniKani", final_message)
-
-    yield from messages
