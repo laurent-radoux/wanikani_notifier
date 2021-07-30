@@ -65,15 +65,26 @@ def process_all(processors, wanikani: str, stop_if_empty: bool):
     help="How many hours since assignments are accounted for (-1 meaning forever)",
     show_default=True
 )
+@click.option(
+    "--min",
+    required=False,
+    type=click.IntRange(min=1),
+    default=1,
+    help="Minimum number of assignments to generate a message",
+    show_default=True
+)
 @generator
-def available_assignments_now(wanikani_client: WaniKaniClient, since: int):
+def available_assignments_now(wanikani_client: WaniKaniClient, since: int, min: int):
     current_time_rounded = datetime.utcnow().replace(minute=0, second=0, microsecond=0)
     start_time = (current_time_rounded - (timedelta(hours=since) - timedelta(seconds=1)) if since >= 0 else None)
     assignments_available_now = get_available_assignments(wanikani_client,
                                                           start=start_time,
                                                           end=current_time_rounded
                                                           )
-    yield get_notification_message(assignments_available_now, message_template="{} are now available!")
+    if sum(assignments_available_now) >= min:
+        yield get_notification_message(assignments_available_now, message_template="{} are now available!")
+    else:
+        yield None
 
 
 @cli.command("all_available_assignments")
