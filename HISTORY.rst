@@ -2,13 +2,20 @@
 History
 =======
 
+Unreleased
+----------
+
+* Improved notifications by allowing the sending of URLs and icons
+
 0.4.2 (2021-07-28)
 ------------------
+
 * Fixed lessons not properly retrieved
 * Fixed CLI parameters retrieval for notify
 
 0.4.1 (2021-07-28)
 ------------------
+
 * Fixed missing dependency
 
 
