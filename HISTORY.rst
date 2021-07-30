@@ -6,6 +6,7 @@ Unreleased
 ----------
 
 * Improved notifications by allowing the sending of URLs and icons
+* Added min option to available_assignments_now CLI command
 
 0.4.2 (2021-07-28)
 ------------------
