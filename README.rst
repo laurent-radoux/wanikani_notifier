@@ -36,6 +36,8 @@ Features
     * Pushover
     * PushSafer
 
+.. include:: docs/usage.rst
+
 
 Credits
 -------
