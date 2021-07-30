@@ -21,8 +21,19 @@ def mocked_consumer(mocked_processor_counter):
     @processor
     def message_consumer(_, message_stream):
         mocked_processor_counter()
+        yield
 
     return message_consumer()
+
+
+@pytest.fixture
+def mocked_processor(mocked_processor_counter):
+    @processor
+    def message_processor(_, message_stream):
+        mocked_processor_counter()
+        yield from message_stream
+
+    return message_processor()
 
 
 @pytest.fixture
@@ -53,10 +64,7 @@ def test_process_all_with_processors_no_generators(mocked_wk_client,
     process_all(processors, "__TOKEN__", stop_if_empty)
 
     mocked_wk_client.assert_called_once()
-    if stop_if_empty:
-        mocked_processor_counter.assert_called_once()
-    else:
-        assert mocked_processor_counter.call_count == len(processors)
+    mocked_processor_counter.assert_called_once()
 
 
 @pytest.mark.parametrize("stop_if_empty", [pytest.param(True, id="stop"), pytest.param(False, id="continue")])
