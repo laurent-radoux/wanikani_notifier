@@ -115,3 +115,5 @@ def notify(_,
     if final_message:
         for n in notifiers:
             n.notify("WaniKani", final_message)
+
+    yield
