@@ -3,8 +3,10 @@ from unittest.mock import MagicMock
 import pytest
 from click.testing import CliRunner
 from pytest_mock import MockerFixture
+from wanikani_notifier.wanikani import AvailableAssignments
 
-from wanikani_notifier.cli import process_all, processor, generator, cli, notify
+from wanikani_notifier.cli import process_all, processor, generator, cli
+from wanikani_notifier.cli import notify, available_assignments_now, all_available_assignments
 
 
 ###################
@@ -55,6 +57,11 @@ def mocked_generator(mocked_processor_counter):
 @pytest.fixture
 def mocked_notifier_creator(mocker: MockerFixture):
     return mocker.patch("wanikani_notifier.notifiers.notifier.factory.create")
+
+
+@pytest.fixture
+def mocked_get_available_assignments(mocker: MockerFixture) -> MagicMock:
+    return mocker.patch("wanikani_notifier.cli.get_available_assignments")
 
 
 ###################
@@ -122,20 +129,32 @@ def test_cli_notify_all_notifiers():
 ###################
 
 
-def test_available_assignments_now():
-    pass
+def test_available_assignments_now(mocked_get_available_assignments):
+    mocked_get_available_assignments.return_value = AvailableAssignments(1, 2)
+    message = available_assignments_now(None, 0)
+
+    assert message == "2 lessons and 1 reviews are now available!"
 
 
-def test_no_available_assignements_now():
-    pass
+def test_no_available_assignements_now(mocked_get_available_assignments):
+    mocked_get_available_assignments.return_value = AvailableAssignments(0, 0)
+    message = available_assignments_now(None, 0)
+
+    assert message is None
 
 
-def test_available_assigments():
-    pass
+def test_available_assigments(mocked_get_available_assignments):
+    mocked_get_available_assignments.return_value = AvailableAssignments(2, 1)
+    message = all_available_assignments(None)
+
+    assert message == "In total, there are 1 lessons and 2 reviews to do."
 
 
-def test_no_available_assignments():
-    pass
+def test_no_available_assignments(mocked_get_available_assignments):
+    mocked_get_available_assignments.return_value = AvailableAssignments(0, 0)
+    message = all_available_assignments(None)
+
+    assert message is None
 
 
 def test_notify_no_notifiers_no_messages(mocked_notifier_creator):
