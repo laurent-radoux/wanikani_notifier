@@ -4,7 +4,7 @@ import pytest
 from click.testing import CliRunner
 from pytest_mock import MockerFixture
 
-from wanikani_notifier.cli import process_all, processor, generator, notify, cli
+from wanikani_notifier.cli import process_all, processor, generator, cli
 
 
 @pytest.fixture
@@ -103,7 +103,15 @@ def mocked_notifier_creator(mocker: MockerFixture):
 
 
 def test_notify_no_notifiers_no_messages():
-    pass
+    runner = CliRunner()
+    result = runner.invoke(cli,
+                           """
+                           --wanikani __TOKEN__ --continue-even-empty
+                           notify
+                           """
+                           )
+
+    assert result.exit_code == 0
 
 
 def test_notify_no_notifiers_some_messages():
@@ -111,7 +119,19 @@ def test_notify_no_notifiers_some_messages():
 
 
 def test_notify_all_notifiers_no_messages(mocked_notifier_creator):
-    pass
+    runner = CliRunner()
+    result = runner.invoke(cli,
+                           """
+                           --wanikani __TOKEN__ --continue-even-empty
+                           notify
+                           --pushsafer __TOKEN__
+                           --pushover __APP_TOKEN__ __USER_TOKEN__
+                           --console
+                           """
+                           )
+
+    assert result.exit_code == 0
+    assert mocked_notifier_creator.call_count == 3
 
 
 def test_notify_all_notifiers_some_messages(mocked_notifier_creator):
