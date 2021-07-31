@@ -4,7 +4,12 @@ import pytest
 from click.testing import CliRunner
 from pytest_mock import MockerFixture
 
-from wanikani_notifier.cli import process_all, processor, generator, cli
+from wanikani_notifier.cli import process_all, processor, generator, cli, notify
+
+
+###################
+#     Fixtures    #
+###################
 
 
 @pytest.fixture
@@ -47,6 +52,16 @@ def mocked_generator(mocked_processor_counter):
     return message_generator()
 
 
+@pytest.fixture
+def mocked_notifier_creator(mocker: MockerFixture):
+    return mocker.patch("wanikani_notifier.notifiers.notifier.factory.create")
+
+
+###################
+# Processor tests #
+###################
+
+
 @pytest.mark.parametrize("stop_if_empty", [pytest.param(True, id="stop"), pytest.param(False, id="continue")])
 def test_process_all_no_processors(mocked_wk_client, mocked_processor_counter, stop_if_empty):
     process_all([], "__TOKEN__", stop_if_empty)
@@ -81,6 +96,32 @@ def test_process_all_no_processors_with_generators(mocked_wk_client,
     assert mocked_processor_counter.call_count == len(processors)
 
 
+###################
+#    CLI tests    #
+###################
+
+
+def test_cli_available_assignments_now():
+    pass
+
+
+def test_cli_available_assigments():
+    pass
+
+
+def test_cli_notify_no_notifiers():
+    pass
+
+
+def test_cli_notify_all_notifiers():
+    pass
+
+
+###################
+#  Command tests  #
+###################
+
+
 def test_available_assignments_now():
     pass
 
@@ -97,42 +138,31 @@ def test_no_available_assignments():
     pass
 
 
-@pytest.fixture
-def mocked_notifier_creator(mocker: MockerFixture):
-    return mocker.patch("wanikani_notifier.notifiers.notifier.factory.create")
+def test_notify_no_notifiers_no_messages(mocked_notifier_creator):
+    notify("", [])
+
+    assert mocked_notifier_creator.call_count == 0
+    assert mocked_notifier_creator.return_value.notify.call_count == 0
 
 
-def test_notify_no_notifiers_no_messages():
-    runner = CliRunner()
-    result = runner.invoke(cli,
-                           """
-                           --wanikani __TOKEN__ --continue-even-empty
-                           notify
-                           """
-                           )
+def test_notify_no_notifiers_some_messages(mocked_notifier_creator):
+    notify("some message", [])
 
-    assert result.exit_code == 0
-
-
-def test_notify_no_notifiers_some_messages():
-    pass
+    assert mocked_notifier_creator.call_count == 0
+    assert mocked_notifier_creator.return_value.notify.call_count == 0
 
 
 def test_notify_all_notifiers_no_messages(mocked_notifier_creator):
-    runner = CliRunner()
-    result = runner.invoke(cli,
-                           """
-                           --wanikani __TOKEN__ --continue-even-empty
-                           notify
-                           --pushsafer __TOKEN__
-                           --pushover __APP_TOKEN__ __USER_TOKEN__
-                           --console
-                           """
-                           )
+    notify("", [mocked_notifier_creator(), mocked_notifier_creator(), mocked_notifier_creator()])
 
-    assert result.exit_code == 0
     assert mocked_notifier_creator.call_count == 3
+    assert mocked_notifier_creator.return_value.notify.call_count == 0
 
 
 def test_notify_all_notifiers_some_messages(mocked_notifier_creator):
-    pass
+    notifiers = [mocked_notifier_creator(), mocked_notifier_creator(), mocked_notifier_creator()]
+
+    notify("some message", notifiers)
+
+    assert mocked_notifier_creator.call_count == 3
+    assert mocked_notifier_creator.return_value.notify.call_count == 3
