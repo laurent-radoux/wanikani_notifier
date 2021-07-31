@@ -6,6 +6,7 @@ Unreleased
 ----------
 
 * Improved notifications by allowing the sending of URLs and icons
+* Fix stop-if-empty option not correctly handled in all cases
 
 0.4.2 (2021-07-28)
 ------------------

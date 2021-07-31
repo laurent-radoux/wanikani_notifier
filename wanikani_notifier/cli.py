@@ -1,9 +1,9 @@
+from collections import namedtuple
 from datetime import datetime, timedelta
 from functools import update_wrapper
 from typing import Optional, Generator, Any, Callable, Tuple, List
 
 import click
-from more_itertools import peekable
 
 from wanikani_api.client import Client as WaniKaniClient
 from wanikani_notifier.notifiers import notifier
@@ -16,8 +16,8 @@ from wanikani_notifier.wanikani import get_notification_message, get_available_a
 
 def processor(f: Callable):
     def new_func(*args, **kwargs):
-        def processor(wanikani_client, message_stream: Generator[str, Any, None]):
-            return f(wanikani_client, message_stream, *args, **kwargs)
+        def processor(context: Context, message_stream: Generator[str, Any, None]):
+            return f(context, message_stream, *args, **kwargs)
 
         return processor
 
@@ -26,9 +26,9 @@ def processor(f: Callable):
 
 def generator(f: Callable):
     @processor
-    def new_func(wanikani_client, message_stream: str, *args, **kwargs) -> Generator[str, Any, None]:
+    def new_func(context: Context, message_stream: str, *args, **kwargs) -> Generator[str, Any, None]:
         yield from message_stream
-        yield from f(wanikani_client, *args, **kwargs)
+        yield from f(context, *args, **kwargs)
 
     return update_wrapper(new_func, f)
 
@@ -43,15 +43,16 @@ def cli(wanikani: str, stop_if_empty: bool):
     pass  # pragma: nocover
 
 
+Context = namedtuple("Context", ("wanikani_client", "stop_if_empty"))
+
+
 @cli.resultcallback()
 def process_all(processors, wanikani: str, stop_if_empty: bool):
-    wanikani_client = WaniKaniClient(wanikani)
+    context = Context(wanikani_client=WaniKaniClient(wanikani), stop_if_empty=stop_if_empty)
 
     message_stream = ()
     for processor in processors:
-        message_stream = peekable(processor(wanikani_client, message_stream))
-        if stop_if_empty and message_stream.peek(default=None) is None:
-            return
+        message_stream = processor(context, message_stream)
 
     for _ in message_stream:
         pass
@@ -66,12 +67,13 @@ def process_all(processors, wanikani: str, stop_if_empty: bool):
     show_default=True
 )
 @generator
-def cli_available_assignments_now(wanikani_client: WaniKaniClient, since: int):
-    yield available_assignments_now(wanikani_client, since)
+def cli_available_assignments_now(context: Context, since: int):
+    yield available_assignments_now(context.wanikani_client, since)
 
 
 def available_assignments_now(wanikani_client: WaniKaniClient, since: int):
     current_time_rounded = datetime.utcnow().replace(minute=0, second=0, microsecond=0)
+    current_time_rounded -= timedelta(hours=1)
     start_time = (current_time_rounded - (timedelta(hours=since) - timedelta(seconds=1)) if since >= 0 else None)
     assignments_available_now = get_available_assignments(wanikani_client,
                                                           start=start_time,
@@ -82,14 +84,14 @@ def available_assignments_now(wanikani_client: WaniKaniClient, since: int):
 
 @cli.command("all_available_assignments")
 @generator
-def cli_all_available_assignments(wanikani_client: WaniKaniClient):
-    yield all_available_assignments(wanikani_client)
+def cli_all_available_assignments(context: Context):
+    yield all_available_assignments(context.wanikani_client)
 
 
 def all_available_assignments(wanikani_client: WaniKaniClient):
     current_time_rounded = datetime.utcnow().replace(minute=0, second=0, microsecond=0)
-    assignments_available_now = get_available_assignments(wanikani_client, end=current_time_rounded)
-    return get_notification_message(assignments_available_now, message_template="In total, there are {} to do.")
+    all_assignments_available = get_available_assignments(wanikani_client, end=current_time_rounded)
+    return get_notification_message(all_assignments_available, message_template="In total, there are {} to do.")
 
 
 @cli.command("notify")
@@ -105,7 +107,7 @@ def all_available_assignments(wanikani_client: WaniKaniClient):
               help="Activates notifications though Pushover by providing the app key and the user key"
               )
 @processor
-def cli_notify(_,
+def cli_notify(context: Context,
                message_stream: Generator[str, Any, None],
                pushsafer: Optional[str],
                pushover: Optional[Tuple[str, str]],
@@ -119,8 +121,12 @@ def cli_notify(_,
     if console:
         notifiers.append(notifier.factory.create(ConsoleNotifier.key()))
 
-    notify("\n".join(m for m in message_stream if m), notifiers)
+    messages = list(message_stream)
+    if context.stop_if_empty and not all(messages):
+        yield
+        return
 
+    notify("\n".join(m for m in messages if m), notifiers)
     yield
 
 
