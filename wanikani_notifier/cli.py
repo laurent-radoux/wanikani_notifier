@@ -1,13 +1,13 @@
 from datetime import datetime, timedelta
 from functools import update_wrapper
-from typing import Optional, Generator, Any, Callable, Tuple
+from typing import Optional, Generator, Any, Callable, Tuple, List
 
 import click
 from more_itertools import peekable
 
 from wanikani_api.client import Client as WaniKaniClient
-
 from wanikani_notifier.notifiers import notifier
+from wanikani_notifier.notifiers.notifier import Notifier
 from wanikani_notifier.notifiers.console import ConsoleNotifier
 from wanikani_notifier.notifiers.pushover import PushoverNotifier
 from wanikani_notifier.notifiers.pushsafer import PushSaferNotifier
@@ -66,6 +66,10 @@ def process_all(processors, wanikani: str, stop_if_empty: bool):
     show_default=True
 )
 @generator
+def cli_available_assignments_now(wanikani_client: WaniKaniClient, since: int):
+    yield available_assignments_now(wanikani_client, since)
+
+
 def available_assignments_now(wanikani_client: WaniKaniClient, since: int):
     current_time_rounded = datetime.utcnow().replace(minute=0, second=0, microsecond=0)
     start_time = (current_time_rounded - (timedelta(hours=since) - timedelta(seconds=1)) if since >= 0 else None)
@@ -73,15 +77,19 @@ def available_assignments_now(wanikani_client: WaniKaniClient, since: int):
                                                           start=start_time,
                                                           end=current_time_rounded
                                                           )
-    yield get_notification_message(assignments_available_now, message_template="{} are now available!")
+    return get_notification_message(assignments_available_now, message_template="{} are now available!")
 
 
 @cli.command("all_available_assignments")
 @generator
+def cli_all_available_assignments(wanikani_client: WaniKaniClient):
+    yield all_available_assignments(wanikani_client)
+
+
 def all_available_assignments(wanikani_client: WaniKaniClient):
     current_time_rounded = datetime.utcnow().replace(minute=0, second=0, microsecond=0)
     assignments_available_now = get_available_assignments(wanikani_client, end=current_time_rounded)
-    yield get_notification_message(assignments_available_now, message_template="In total, there are {} to do.")
+    return get_notification_message(assignments_available_now, message_template="In total, there are {} to do.")
 
 
 @cli.command("notify")
@@ -97,12 +105,12 @@ def all_available_assignments(wanikani_client: WaniKaniClient):
               help="Activates notifications though Pushover by providing the app key and the user key"
               )
 @processor
-def notify(_,
-           message_stream: Generator[str, Any, None],
-           pushsafer: Optional[str],
-           pushover: Optional[Tuple[str, str]],
-           console: Optional[bool]
-           ) -> None:
+def cli_notify(_,
+               message_stream: Generator[str, Any, None],
+               pushsafer: Optional[str],
+               pushover: Optional[Tuple[str, str]],
+               console: Optional[bool]
+               ) -> None:
     notifiers = []
     if pushsafer:
         notifiers.append(notifier.factory.create(PushSaferNotifier.key(), private_key=pushsafer))
@@ -111,9 +119,12 @@ def notify(_,
     if console:
         notifiers.append(notifier.factory.create(ConsoleNotifier.key()))
 
-    final_message = "\n".join(m for m in message_stream if m)
-    if final_message:
-        for n in notifiers:
-            n.notify(title="WaniKani", message=final_message, url="https://www.wanikani.com/dashboard")
+    notify("\n".join(m for m in message_stream if m), notifiers)
 
     yield
+
+
+def notify(message: str, notifiers: List[Notifier]) -> None:
+    if message:
+        for n in notifiers:
+            n.notify(title="WaniKani", message=message, url="https://www.wanikani.com/dashboard")
