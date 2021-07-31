@@ -1,3 +1,4 @@
+from typing import Tuple
 from unittest.mock import MagicMock
 
 import pytest
@@ -99,119 +100,96 @@ class TestCli:
 ###################
 class TestUseCases:
     @staticmethod
-    def get_full_use_case_command(stop_if_empty: bool) -> str:
-        return """
-                --wanikani __TOKEN__ {}
-                available_assignments_now
-                all_available_assignments
-                notify --console
-                """.format(("--continue-even-empty" if not stop_if_empty else ""))
+    @pytest.fixture(params=[True, False], ids=["stop", "continue"])
+    def notify_new_and_all_use_case(request) -> Tuple[str, bool]:
+        return (
+            """
+            --wanikani __TOKEN__ {}
+            available_assignments_now
+            all_available_assignments
+            notify --console
+            """.format(("--continue-even-empty" if not request.param else "")),
+            request.param
+        )
 
-    @pytest.mark.parametrize("stop_if_empty", [pytest.param(True, id="stop"), pytest.param(False, id="continue"),
-                                               pytest.param(False, id="continue2")])
-    def test_cli_notify_new_none_available_then_all_none_available(self,
-                                                                   mocked_notifier_creator,
-                                                                   mocked_available_assignments_now,
-                                                                   mocked_all_available_assignments,
-                                                                   stop_if_empty
-                                                                   ):
-        mocked_available_assignments_now.return_value = None
-        mocked_all_available_assignments.return_value = None
+    @pytest.mark.parametrize("now_available,all_available", [
+        pytest.param(None, None, id="none"),
+        pytest.param("__MESSAGE__", None, id="some_new_none_all"),
+        pytest.param(None, "__MESSAGE__", id="none_new_some_all"),
+        pytest.param("__MESSAGE__", "__MESSAGE__", id="some_new_some_all"),
+    ])
+    def test_cli_notify_new_and_all_use_case(self,
+                                             mocked_notifier_creator,
+                                             mocked_available_assignments_now,
+                                             mocked_all_available_assignments,
+                                             notify_new_and_all_use_case,
+                                             now_available,
+                                             all_available
+                                             ):
+        mocked_available_assignments_now.return_value = now_available
+        mocked_all_available_assignments.return_value = all_available
+        if not notify_new_and_all_use_case[1]:
+            expect_notify = any((now_available, all_available))
+        else:
+            expect_notify = all((now_available, all_available))
 
         runner = CliRunner()
-        result = runner.invoke(cli, self.get_full_use_case_command(stop_if_empty))
+        result = runner.invoke(cli, notify_new_and_all_use_case[0])
 
         assert result.exit_code == 0
         assert mocked_notifier_creator.call_count == 1
         assert mocked_available_assignments_now.call_count == 1
         assert mocked_all_available_assignments.call_count == 1
-        assert mocked_notifier_creator.return_value.notify.call_count == 0
-
-    @pytest.mark.parametrize("stop_if_empty", [pytest.param(True, id="stop"), pytest.param(False, id="continue")])
-    def test_cli_notify_new_none_available_then_all_some_available(self,
-                                                                   mocked_notifier_creator,
-                                                                   mocked_available_assignments_now,
-                                                                   mocked_all_available_assignments,
-                                                                   stop_if_empty
-                                                                   ):
-        mocked_available_assignments_now.return_value = None
-        mocked_all_available_assignments.return_value = "__MESSAGE__"
-
-        runner = CliRunner()
-        result = runner.invoke(cli, self.get_full_use_case_command(stop_if_empty))
-
-        assert result.exit_code == 0
-        assert mocked_notifier_creator.call_count == 1
-        assert mocked_available_assignments_now.call_count == 1
-        assert mocked_all_available_assignments.call_count == 1
-        assert mocked_notifier_creator.return_value.notify.call_count == (1 if not stop_if_empty else 0)
-
-    @pytest.mark.parametrize("stop_if_empty", [pytest.param(True, id="stop"), pytest.param(False, id="continue")])
-    def test_cli_notify_new_some_available_then_all_none_available(self,
-                                                                   mocked_notifier_creator,
-                                                                   mocked_available_assignments_now,
-                                                                   mocked_all_available_assignments,
-                                                                   stop_if_empty
-                                                                   ):
-        mocked_available_assignments_now.return_value = "__MESSAGE__"
-        mocked_all_available_assignments.return_value = None
-
-        runner = CliRunner()
-        result = runner.invoke(cli, self.get_full_use_case_command(stop_if_empty))
-
-        assert result.exit_code == 0
-        assert mocked_notifier_creator.call_count == 1
-        assert mocked_available_assignments_now.call_count == 1
-        assert mocked_all_available_assignments.call_count == 1
-        assert mocked_notifier_creator.return_value.notify.call_count == (1 if not stop_if_empty else 0)
-
-    @pytest.mark.parametrize("stop_if_empty", [pytest.param(True, id="stop"), pytest.param(False, id="continue")])
-    def test_cli_notify_new_some_available_then_all_some_available(self,
-                                                                   mocked_notifier_creator,
-                                                                   mocked_available_assignments_now,
-                                                                   mocked_all_available_assignments,
-                                                                   stop_if_empty
-                                                                   ):
-        mocked_available_assignments_now.return_value = "__MESSAGE__"
-        mocked_all_available_assignments.return_value = "__MESSAGE__"
-
-        runner = CliRunner()
-        result = runner.invoke(cli, self.get_full_use_case_command(stop_if_empty))
-
-        assert result.exit_code == 0
-        assert mocked_notifier_creator.call_count == 1
-        assert mocked_available_assignments_now.call_count == 1
-        assert mocked_all_available_assignments.call_count == 1
-        assert mocked_notifier_creator.return_value.notify.call_count == 1
+        assert mocked_notifier_creator.return_value.notify.call_count == (1 if expect_notify else 0)
 
 
 ###################
 #  Command tests  #
 ###################
 class TestCommands:
-    def test_available_assignments_now(self, mocked_get_available_assignments):
-        mocked_get_available_assignments.return_value = AvailableAssignments(1, 2)
+    @pytest.mark.parametrize("assignments,expected_message",
+                             [
+                                 pytest.param(AvailableAssignments(0, 2),
+                                              "2 lessons are now available!",
+                                              id="lessons_only"),
+                                 pytest.param(AvailableAssignments(3, 0),
+                                              "3 reviews are now available!",
+                                              id="reviews_only"),
+                                 pytest.param(AvailableAssignments(4, 5),
+                                              "5 lessons and 4 reviews are now available!",
+                                              id="lessons_and_reviews"),
+                                 pytest.param(AvailableAssignments(0, 0),
+                                              None,
+                                              id="none")
+                             ]
+                             )
+    def test_available_assignments_now(self, mocked_get_available_assignments, assignments, expected_message):
+        mocked_get_available_assignments.return_value = assignments
         message = available_assignments_now(None, 0)
 
-        assert message == "2 lessons and 1 reviews are now available!"
+        assert message == expected_message
 
-    def test_no_available_assignements_now(self, mocked_get_available_assignments):
-        mocked_get_available_assignments.return_value = AvailableAssignments(0, 0)
-        message = available_assignments_now(None, 0)
-
-        assert message is None
-
-    def test_available_assigments(self, mocked_get_available_assignments):
-        mocked_get_available_assignments.return_value = AvailableAssignments(2, 1)
+    @pytest.mark.parametrize("assignments,expected_message",
+                             [
+                                 pytest.param(AvailableAssignments(0, 2),
+                                              "In total, there are 2 lessons to do.",
+                                              id="lessons_only"),
+                                 pytest.param(AvailableAssignments(3, 0),
+                                              "In total, there are 3 reviews to do.",
+                                              id="reviews_only"),
+                                 pytest.param(AvailableAssignments(4, 5),
+                                              "In total, there are 5 lessons and 4 reviews to do.",
+                                              id="lessons_and_reviews"),
+                                 pytest.param(AvailableAssignments(0, 0),
+                                              None,
+                                              id="none")
+                             ]
+                             )
+    def test_all_available_assignments(self, mocked_get_available_assignments, assignments, expected_message):
+        mocked_get_available_assignments.return_value = assignments
         message = all_available_assignments(None)
 
-        assert message == "In total, there are 1 lessons and 2 reviews to do."
-
-    def test_no_available_assignments(self, mocked_get_available_assignments):
-        mocked_get_available_assignments.return_value = AvailableAssignments(0, 0)
-        message = all_available_assignments(None)
-
-        assert message is None
+        assert message == expected_message
 
     def test_notify_no_notifiers_no_messages(self, mocked_notifier_creator):
         notify("", [])
