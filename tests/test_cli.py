@@ -1,9 +1,10 @@
 from unittest.mock import MagicMock
 
 import pytest
+from click.testing import CliRunner
 from pytest_mock import MockerFixture
 
-from wanikani_notifier.cli import process_all, processor, generator
+from wanikani_notifier.cli import process_all, processor, generator, notify, cli
 
 
 @pytest.fixture
@@ -78,3 +79,40 @@ def test_process_all_no_processors_with_generators(mocked_wk_client,
 
     mocked_wk_client.assert_called_once()
     assert mocked_processor_counter.call_count == len(processors)
+
+
+def test_available_assignments_now():
+    pass
+
+
+def test_no_available_assignements_now():
+    pass
+
+
+def test_available_assigments():
+    pass
+
+
+def test_no_available_assignments():
+    pass
+
+
+@pytest.fixture
+def mocked_notifier_creator(mocker: MockerFixture):
+    return mocker.patch("wanikani_notifier.notifiers.notifier.factory.create")
+
+
+def test_notify_no_notifiers_no_messages():
+    pass
+
+
+def test_notify_no_notifiers_some_messages():
+    pass
+
+
+def test_notify_all_notifiers_no_messages(mocked_notifier_creator):
+    pass
+
+
+def test_notify_all_notifiers_some_messages(mocked_notifier_creator):
+    pass
