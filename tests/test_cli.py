@@ -108,20 +108,60 @@ def test_process_all_no_processors_with_generators(mocked_wk_client,
 ###################
 
 
-def test_cli_available_assignments_now():
-    pass
+def test_cli_no_commands_no_options():
+    runner = CliRunner()
+    result = runner.invoke(cli, "")
+
+    assert "Usage" in result.stdout
 
 
-def test_cli_available_assigments():
-    pass
+def test_cli_no_commands_with_wanikani_token(mocked_wk_client):
+    runner = CliRunner()
+    result = runner.invoke(cli, "--wanikani __TOKEN__")
+
+    assert result.exit_code == 2
 
 
-def test_cli_notify_no_notifiers():
-    pass
+def test_cli_available_assignments_now_without_options(mocked_wk_client):
+    runner = CliRunner()
+    result = runner.invoke(cli, "--wanikani __TOKEN__ available_assignments_now")
+
+    assert result.exit_code == 0
 
 
-def test_cli_notify_all_notifiers():
-    pass
+def test_cli_available_assignments_now_with_options(mocked_wk_client):
+    runner = CliRunner()
+    result = runner.invoke(cli, "--wanikani __TOKEN__ available_assignments_now --since 1")
+
+    assert result.exit_code == 0
+
+
+def test_cli_available_assigments(mocked_wk_client):
+    runner = CliRunner()
+    result = runner.invoke(cli, "--wanikani __TOKEN__ all_available_assignments")
+
+    assert result.exit_code == 0
+
+
+def test_cli_notify_no_notifiers(mocked_notifier_creator):
+    runner = CliRunner()
+    result = runner.invoke(cli, "--wanikani __TOKEN__ notify")
+
+    assert result.exit_code == 0
+    mocked_notifier_creator.assert_not_called()
+
+
+def test_cli_notify_all_notifiers(mocked_notifier_creator):
+    runner = CliRunner()
+    result = runner.invoke(cli,
+                           """
+                           --wanikani __TOKEN__
+                           notify --pushsafer __TOKEN__ --pushover __APP_TOKEN__ __USER_TOKEN__ --console
+                           """
+                           )
+
+    assert result.exit_code == 0
+    assert mocked_notifier_creator.call_count == 3
 
 
 ###################
