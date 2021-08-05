@@ -147,25 +147,38 @@ class TestUseCases:
 #  Command tests  #
 ###################
 class TestCommands:
-    @pytest.mark.parametrize("assignments,expected_message",
+    @pytest.mark.parametrize("assignments,min_assignments,expected_message",
                              [
                                  pytest.param(AvailableAssignments(0, 2),
+                                              1,
                                               "2 lessons are now available!",
                                               id="lessons_only"),
                                  pytest.param(AvailableAssignments(3, 0),
+                                              1,
                                               "3 reviews are now available!",
                                               id="reviews_only"),
                                  pytest.param(AvailableAssignments(4, 5),
+                                              1,
                                               "5 lessons and 4 reviews are now available!",
                                               id="lessons_and_reviews"),
+                                 pytest.param(AvailableAssignments(4, 5),
+                                              10,
+                                              None,
+                                              id="lessons_and_reviews_below_min"),
+                                 pytest.param(AvailableAssignments(4, 5),
+                                              9,
+                                              "5 lessons and 4 reviews are now available!",
+                                              id="lessons_and_reviews_equal_min"),
                                  pytest.param(AvailableAssignments(0, 0),
+                                              1,
                                               None,
                                               id="none")
                              ]
                              )
-    def test_available_assignments_now(self, mocked_get_available_assignments, assignments, expected_message):
+    def test_available_assignments_now(self, mocked_get_available_assignments,
+                                       assignments, min_assignments, expected_message):
         mocked_get_available_assignments.return_value = assignments
-        message = available_assignments_now(None, 0)
+        message = available_assignments_now(None, 0, min_assignments)
 
         assert message == expected_message
 

@@ -68,6 +68,7 @@ def process_all(processors, wanikani: str, stop_if_empty: bool):
 )
 @click.option(
     "--min",
+    "min_assignments",
     required=False,
     type=click.IntRange(min=1),
     default=1,
@@ -75,18 +76,18 @@ def process_all(processors, wanikani: str, stop_if_empty: bool):
     show_default=True
 )
 @generator
-def cli_available_assignments_now(context: Context, since: int):
-    yield available_assignments_now(context.wanikani_client, since)
+def cli_available_assignments_now(context: Context, since: int, min_assignments: int):
+    yield available_assignments_now(context.wanikani_client, since, min_assignments)
 
-    
-def available_assignments_now(wanikani_client: WaniKaniClient, since: int, min: int):
+
+def available_assignments_now(wanikani_client: WaniKaniClient, since: int, min_assignments: int):
     current_time_rounded = datetime.utcnow()
     start_time = (current_time_rounded - (timedelta(hours=since) - timedelta(seconds=1)) if since >= 0 else None)
     assignments_available_now = get_available_assignments(wanikani_client,
                                                           start=start_time,
                                                           end=current_time_rounded
                                                           )
-    if sum(assignments_available_now) >= min:
+    if sum(assignments_available_now) >= min_assignments:
         return get_notification_message(assignments_available_now, message_template="{} are now available!")
     else:
         return
