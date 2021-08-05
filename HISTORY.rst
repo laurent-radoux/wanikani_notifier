@@ -10,6 +10,8 @@ Unreleased
 * Time for available now is no longer set to beginning of hour
 
   * Caused weird timings for lessons
+  
+* Fix stop-if-empty option not correctly handled in all cases
 
 0.4.2 (2021-07-28)
 ------------------
