@@ -5,12 +5,15 @@ History
 Unreleased
 ----------
 
+0.5.0 (2021-08-05)
+------------------
+
 * Improved notifications by allowing the sending of URLs and icons
 * Added min option to available_assignments_now CLI command
 * Time for available now is no longer set to beginning of hour
 
   * Caused weird timings for lessons
-  
+
 * Fix stop-if-empty option not correctly handled in all cases
 
 0.4.2 (2021-07-28)
