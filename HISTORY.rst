@@ -5,6 +5,9 @@ History
 Unreleased
 ----------
 
+0.5.1 (2021-10-03)
+------------------
+
 * Fixed reviews not filtered against current user level
 
 0.5.0 (2021-08-05)
