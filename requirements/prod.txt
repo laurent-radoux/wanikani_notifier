@@ -1,7 +1,7 @@
 pip
-setuptools~=57.4.0
+setuptools==57.4.0
 Click==7.0
-urllib3~=1.26.6
+urllib3==1.26.6
 wanikani-api==0.5.1
 python-pushsafer==0.4
 chump==1.6.0
