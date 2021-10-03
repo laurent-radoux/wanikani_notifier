@@ -24,7 +24,7 @@ def get_available_assignments(wanikani_client: WaniKaniClient,
     user_level = wanikani_client.user_information().level
     review_count = sum(1
                        for a in wanikani_client.assignments(fetch_all=True, unlocked=True, started=True,
-                                                   available_after=start, available_before=end)
+                                                            available_after=start, available_before=end)
                        if a.subject.level <= user_level
                        )
     lesson_count = sum(1
