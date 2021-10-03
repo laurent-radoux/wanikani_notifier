@@ -21,10 +21,14 @@ def get_available_assignments(wanikani_client: WaniKaniClient,
     :param end: End of the time period when assignments are considered (inclusive).
     :return: the available assignments.
     """
-    review_count = len(wanikani_client.assignments(fetch_all=True, unlocked=True, started=True,
-                                                   available_after=start, available_before=end))
-    lesson_count = sum(1 for a
-                       in wanikani_client.assignments(fetch_all=True, unlocked=True, started=False)
+    user_level = wanikani_client.user_information().level
+    review_count = sum(1
+                       for a in wanikani_client.assignments(fetch_all=True, unlocked=True, started=True,
+                                                   available_after=start, available_before=end)
+                       if a.subject.level <= user_level
+                       )
+    lesson_count = sum(1
+                       for a in wanikani_client.assignments(fetch_all=True, unlocked=True, started=False)
                        if a.created_at.replace(tzinfo=pytz.utc) <= end.replace(tzinfo=pytz.utc)
                        and (start.replace(tzinfo=pytz.utc) <= a.created_at.replace(tzinfo=pytz.utc) if start else True)
                        )
