@@ -5,6 +5,9 @@ History
 Unreleased
 ----------
 
+0.5.2 (2021-12-30)
+------------------
+
 * Updated pushsafer dependencies
 
 0.5.1 (2021-10-03)
