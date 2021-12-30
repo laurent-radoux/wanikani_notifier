@@ -11,14 +11,14 @@ from wanikani_notifier.notifiers.pushsafer import PushSaferNotifier
 
 @pytest.fixture
 def mocked_pushsafer_init(mocker: MockerFixture) -> MagicMock:
-    mocked = mocker.patch("pushsafer.init")
+    mocked = mocker.patch("pushsafer.Client")
     yield mocked
     mocked.assert_called_once()
 
 
 @pytest.fixture
-def mocked_pushsafer_send_message(mocker: MockerFixture) -> MagicMock:
-    return mocker.patch("pushsafer.Client.send_message")
+def mocked_pushsafer_send_message(mocked_pushsafer_init) -> MagicMock:
+    return mocked_pushsafer_init.return_value.send_message
 
 
 class TestPushSaferNotifier(NotifierTester):

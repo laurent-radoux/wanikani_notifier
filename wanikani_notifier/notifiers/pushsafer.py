@@ -1,18 +1,13 @@
 from typing import Optional
 
 import pushsafer
-import urllib3
-from urllib3.exceptions import InsecureRequestWarning
 
 from wanikani_notifier.notifiers.notifier import Notifier, NoMessageProvided, factory
 
 
 class PushSaferNotifier(Notifier):
     def __init__(self, private_key: str):
-        urllib3.disable_warnings(category=InsecureRequestWarning)
-
-        pushsafer.init(private_key)
-        self._client = pushsafer.Client("")
+        self._client = pushsafer.Client(private_key)
 
     @classmethod
     def key(cls) -> str:
@@ -26,9 +21,7 @@ class PushSaferNotifier(Notifier):
         if not message:
             raise NoMessageProvided
 
-        self._client.send_message(message, title,
-                                  None, None, None, None, url, None, None,
-                                  None, None, None, None, None, None, None)
+        self._client.send_message(title=title, message=message, url=url)
 
 
 factory.register_builder(PushSaferNotifier.key(), PushSaferNotifier.build)
