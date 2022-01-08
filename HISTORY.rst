@@ -5,6 +5,9 @@ History
 Unreleased
 ----------
 
+0.6.1 (2022-01-08)
+------------------
+
 * Fixed python 3.6 no longer supported
 
 0.6.0 (2022-01-08)
