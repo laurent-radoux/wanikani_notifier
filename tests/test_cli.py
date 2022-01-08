@@ -21,6 +21,11 @@ def mocked_wk_client(mocker: MockerFixture) -> MagicMock:
 
 
 @pytest.fixture
+def mocked_get_all_subjects(mocker: MockerFixture) -> MagicMock:
+    return mocker.patch("wanikani_notifier.cli.get_all_subjects")
+
+
+@pytest.fixture
 def mocked_notifier_creator(mocker: MockerFixture):
     return mocker.patch("wanikani_notifier.notifiers.notifier.factory.create")
 
@@ -51,38 +56,38 @@ class TestCli:
 
         assert "Usage" in result.stdout
 
-    def test_cli_no_commands_with_wanikani_token(self, mocked_wk_client):
+    def test_cli_no_commands_with_wanikani_token(self, mocked_wk_client, mocked_get_all_subjects):
         runner = CliRunner()
         result = runner.invoke(cli, "--wanikani __TOKEN__")
 
         assert result.exit_code == 2
 
-    def test_cli_available_assignments_now_without_options(self, mocked_wk_client):
+    def test_cli_available_assignments_now_without_options(self, mocked_wk_client, mocked_get_all_subjects):
         runner = CliRunner()
         result = runner.invoke(cli, "--wanikani __TOKEN__ available_assignments_now")
 
         assert result.exit_code == 0
 
-    def test_cli_available_assignments_now_with_options(self, mocked_wk_client):
+    def test_cli_available_assignments_now_with_options(self, mocked_wk_client, mocked_get_all_subjects):
         runner = CliRunner()
         result = runner.invoke(cli, "--wanikani __TOKEN__ available_assignments_now --since 1")
 
         assert result.exit_code == 0
 
-    def test_cli_available_assigments(self, mocked_wk_client):
+    def test_cli_available_assigments(self, mocked_wk_client, mocked_get_all_subjects):
         runner = CliRunner()
         result = runner.invoke(cli, "--wanikani __TOKEN__ all_available_assignments")
 
         assert result.exit_code == 0
 
-    def test_cli_notify_no_notifiers(self, mocked_notifier_creator):
+    def test_cli_notify_no_notifiers(self, mocked_get_all_subjects, mocked_notifier_creator):
         runner = CliRunner()
         result = runner.invoke(cli, "--wanikani __TOKEN__ notify")
 
         assert result.exit_code == 0
         mocked_notifier_creator.assert_not_called()
 
-    def test_cli_notify_all_notifiers(self, mocked_notifier_creator):
+    def test_cli_notify_all_notifiers(self, mocked_get_all_subjects, mocked_notifier_creator):
         runner = CliRunner()
         result = runner.invoke(cli,
                                """
@@ -119,6 +124,7 @@ class TestUseCases:
         pytest.param("__MESSAGE__", "__MESSAGE__", id="some_new_some_all"),
     ])
     def test_cli_notify_new_and_all_use_case(self,
+                                             mocked_get_all_subjects,
                                              mocked_notifier_creator,
                                              mocked_available_assignments_now,
                                              mocked_all_available_assignments,
@@ -178,7 +184,7 @@ class TestCommands:
     def test_available_assignments_now(self, mocked_get_available_assignments,
                                        assignments, min_assignments, expected_message):
         mocked_get_available_assignments.return_value = assignments
-        message = available_assignments_now(None, 0, min_assignments)
+        message = available_assignments_now(None, {}, 0, min_assignments)
 
         assert message == expected_message
 
@@ -200,7 +206,7 @@ class TestCommands:
                              )
     def test_all_available_assignments(self, mocked_get_available_assignments, assignments, expected_message):
         mocked_get_available_assignments.return_value = assignments
-        message = all_available_assignments(None)
+        message = all_available_assignments(None, {})
 
         assert message == expected_message
 

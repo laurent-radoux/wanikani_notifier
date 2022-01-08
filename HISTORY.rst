@@ -5,6 +5,9 @@ History
 Unreleased
 ----------
 
+* Fixed issue where hidden items were not filtered out
+* Improved performances by caching all subjects
+
 0.5.2 (2021-12-30)
 ------------------
 

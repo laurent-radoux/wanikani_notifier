@@ -1,14 +1,40 @@
+import os
 from datetime import datetime
 from collections import namedtuple
-from typing import Optional
+from typing import Optional, Dict
 
 import pytz
+import ujson as ujson
 from wanikani_api.client import Client as WaniKaniClient
+from wanikani_api.models import Subject
 
 AvailableAssignments = namedtuple("AvailableAssignments", ("reviews", "lessons"))
 
 
+SUBJECTS_CACHED_FILENAME = "subjects.json"
+
+
+def get_all_subjects(wk_client: WaniKaniClient) -> Dict[int, Subject]:
+    all_subjects: Dict[int, Subject] = {}
+
+    if not os.path.exists("data/"):
+        os.makedirs("data/")
+
+    if os.path.exists(f"data/{SUBJECTS_CACHED_FILENAME}"):
+        subject_jsons = ujson.load(open(f"data/{SUBJECTS_CACHED_FILENAME}", "r"))
+        all_subjects = {subject_json["id"]: Subject(subject_json) for subject_json in subject_jsons}
+
+    latest_update = max([s.data_updated_at for s in all_subjects.values()]) if all_subjects else datetime.min
+    for subject in wk_client.subjects(updated_after=latest_update.strftime("%Y-%m-%dT%H:%M:%S.%f"), fetch_all=True):
+        all_subjects[subject.id] = subject
+
+    ujson.dump([subject._raw for subject in all_subjects.values()], open(f"data/{SUBJECTS_CACHED_FILENAME}", "w"))
+
+    return all_subjects
+
+
 def get_available_assignments(wanikani_client: WaniKaniClient,
+                              all_subjects: Dict[int, Subject],
                               end: datetime,
                               start: datetime = None
                               ) -> AvailableAssignments:
@@ -25,7 +51,8 @@ def get_available_assignments(wanikani_client: WaniKaniClient,
     review_count = sum(1
                        for a in wanikani_client.assignments(fetch_all=True, unlocked=True, started=True,
                                                             available_after=start, available_before=end)
-                       if a.subject.level <= user_level
+                       if not a.hidden
+                       and a.subject_id in all_subjects and all_subjects[a.subject_id].level <= user_level
                        )
     lesson_count = sum(1
                        for a in wanikani_client.assignments(fetch_all=True, unlocked=True, started=False)
